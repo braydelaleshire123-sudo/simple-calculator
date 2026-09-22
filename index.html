@@ -258,7 +258,7 @@ function drawInterior(o){ctx.fillStyle='#15191d';ctx.fillRect(o.x+5,o.y+5,o.w-10
 function draw(){ctx.fillStyle=world[1];ctx.fillRect(0,0,W,H);ctx.save();ctx.translate(-cam.x,-cam.y);ctx.strokeStyle=world[2]+'33';for(let x=0;x<3200;x+=100){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,2200);ctx.stroke()}for(let y=0;y<2200;y+=100){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(3200,y);ctx.stroke()}for(let o of obs){
  ctx.save();
  ctx.shadowColor='#0008';ctx.shadowBlur=10;ctx.shadowOffsetY=6;
- const roof=o.bridge?'#80684e':'#343b42', wall=o.bridge?'#5e4d3b':'#242a31';
+ const roof=['#5b7285','#596f82','#667d91','#536b7e','#6f6278'][o.type]||'#5b7285', wall=['#344653','#354b5b','#3e5262','#304655','#4b3f4f'][o.type]||'#344653';
  if(player&&player.onFoot&&player.inBuilding===o.id){ctx.fillStyle=['#1b2024','#202923','#242024','#1f2529','#252522'][o.type];ctx.fillRect(o.x,o.y,o.w,o.h);ctx.strokeStyle='#87939a';ctx.lineWidth=4;ctx.strokeRect(o.x+5,o.y+5,o.w-10,o.h-10);ctx.fillStyle='#313a40';ctx.fillRect(o.x+18,o.y+18,o.w*.32,24);ctx.fillStyle='#59656b';ctx.fillRect(o.x+20,o.y+55,60,34);ctx.fillStyle='#8a744b';ctx.fillRect(o.x+o.w-92,o.y+22,62,18);ctx.fillStyle='#30383d';ctx.fillRect(o.x+o.w-105,o.y+55,70,48);ctx.fillStyle='#4f5b61';ctx.fillRect(o.x+28,o.y+o.h-58,85,25);ctx.fillStyle='#6d7b80';ctx.fillRect(o.x+o.w*.48,o.y+o.h-62,55,30);ctx.fillStyle='#11171b';ctx.fillRect(o.x+o.w*.48+8,o.y+o.h-56,39,17);ctx.fillStyle='#c5a85b';ctx.fillRect(o.x+o.w/2-3,o.y+o.h-18,6,12);ctx.fillStyle='#111';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText(['COMMAND ROOM','WORKSHOP','BARRACKS','WAREHOUSE','OFFICE'][o.type],o.x+o.w/2,o.y+o.h/2);}
  ctx.fillStyle='rgba(255,255,255,.045)';ctx.fillRect(o.x+6,o.y+6,o.w-12,o.h-12);
  ctx.shadowColor='transparent';
