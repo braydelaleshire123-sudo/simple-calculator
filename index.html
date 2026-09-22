@@ -24,8 +24,31 @@ for(const e of enemies){let a=Math.atan2(player.y-e.y,player.x-e.x);e.x+=Math.co
 for(let i=bullets.length-1;i>=0;i--){let b=bullets[i],hit=false;for(let j=enemies.length-1;j>=0;j--){let e=enemies[j];if(d(b,e)<b.r+18){e.hp-=b.damage;hit=true;if(e.hp<=0){score+=e.elite?30:10;enemies.splice(j,1);burst(e.x,e.y,7,'#d7d7d7')}}}if(boss&&!hit&&d(b,boss)<b.r+30){boss.hp-=b.damage;hit=true;if(boss.hp<=0){score+=500;burst(boss.x,boss.y,25,'#d7d7d7');boss=null;show('BOSS DEFEATED')}}if(hit)bullets.splice(i,1)}
 particles.forEach(p=>{p.x+=p.vx*dt;p.y+=p.vy*dt;p.life-=dt});particles=particles.filter(p=>p.life>0);if(score>=wave*180)newWave();if(player.hp<=0)gameOver();
 document.getElementById('score').textContent=score;document.getElementById('wave').textContent=wave;document.getElementById('hp').textContent=Math.max(0,Math.ceil(player.hp));document.getElementById('healthbar').style.width=Math.max(0,player.hp)+'%';document.getElementById('ammo').textContent=player.reload>0?'RELOADING…':player.ammo+' / '+player.reserve}
-function human(x,y,scale,skin,shirt,pants,aim,enemy=false){ctx.save();ctx.translate(x,y);ctx.rotate(aim);ctx.scale(scale,scale);ctx.strokeStyle='#17191c';ctx.lineWidth=3;ctx.lineCap='round';
-ctx.fillStyle=pants;ctx.fillRect(-9,8,7,16);ctx.fillRect(2,8,7,16);ctx.fillStyle=shirt;ctx.fillRect(-11,-7,22,19);ctx.beginPath();ctx.arc(0,-15,9,0,7);ctx.fillStyle=skin;ctx.fill();ctx.fillStyle='#25282d';ctx.fillRect(-8,-21,16,5);ctx.beginPath();ctx.moveTo(-8,-2);ctx.lineTo(-17,5);ctx.moveTo(8,-2);ctx.lineTo(17,5);ctx.stroke();ctx.fillStyle='#16191d';ctx.fillRect(9,-2,22,4);ctx.restore()}
+function human(x,y,scale,skin,shirt,pants,aim,enemy=false){
+ctx.save();ctx.translate(x,y);ctx.rotate(aim);ctx.scale(scale,scale);
+ctx.lineCap='round';ctx.lineJoin='round';
+// legs
+ctx.strokeStyle='#17191d';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(-5,8);ctx.lineTo(-7,24);ctx.moveTo(5,8);ctx.lineTo(7,24);ctx.stroke();
+ctx.strokeStyle='#22252a';ctx.lineWidth=5;ctx.beginPath();ctx.moveTo(-8,24);ctx.lineTo(-14,24);ctx.moveTo(8,24);ctx.lineTo(14,24);ctx.stroke();
+// torso / jacket
+ctx.fillStyle=shirt;ctx.beginPath();ctx.roundRect(-12,-6,24,21,5);ctx.fill();
+ctx.fillStyle='#20252b';ctx.fillRect(-3,-5,6,19);
+// arms and hands
+ctx.strokeStyle=shirt;ctx.lineWidth=7;ctx.beginPath();ctx.moveTo(-9,-1);ctx.lineTo(-18,6);ctx.moveTo(9,-1);ctx.lineTo(18,6);ctx.stroke();
+ctx.fillStyle=skin;ctx.beginPath();ctx.arc(-18,6,3.5,0,7);ctx.arc(18,6,3.5,0,7);ctx.fill();
+// neck
+ctx.fillStyle=skin;ctx.fillRect(-4,-10,8,6);
+// head
+ctx.beginPath();ctx.ellipse(0,-17,9,10,0,0,7);ctx.fillStyle=skin;ctx.fill();
+// hair
+ctx.fillStyle=enemy?'#30251f':'#20242a';ctx.beginPath();ctx.arc(0,-20,9,Math.PI,7);ctx.fill();
+ctx.fillRect(-9,-20,18,4);
+// face direction / eye
+ctx.fillStyle='#111';ctx.beginPath();ctx.arc(4,-17,1.2,0,7);ctx.fill();
+// weapon held forward
+ctx.fillStyle='#15181b';ctx.fillRect(9,-3,27,5);ctx.fillStyle='#343a40';ctx.fillRect(27,-4,8,7);
+ctx.restore()}
+
 function draw(){ctx.fillStyle='#11161b';ctx.fillRect(0,0,W,H);ctx.strokeStyle='#ffffff09';for(let x=0;x<W;x+=55){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,H);ctx.stroke()}for(let y=0;y<H;y+=55){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(W,y);ctx.stroke()}
 for(const b of bullets){ctx.fillStyle='#ffd34d';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()}for(const e of enemies){let a=Math.atan2(player.y-e.y,player.x-e.x);human(e.x,e.y,e.elite?1.25:1,e.skin,e.shirt,e.pants,a,true);ctx.fillStyle='#111';ctx.fillRect(e.x-15,e.y-29,30,3);ctx.fillStyle='#73db8b';ctx.fillRect(e.x-15,e.y-29,30*(e.hp/e.maxHp),3)}if(boss){human(boss.x,boss.y,1.9,boss.skin,boss.shirt,boss.pants,Math.atan2(player.y-boss.y,player.x-boss.x));ctx.fillStyle='#111';ctx.fillRect(boss.x-50,boss.y-60,100,6);ctx.fillStyle='#d65b69';ctx.fillRect(boss.x-50,boss.y-60,100*(boss.hp/boss.maxHp),6)}
 human(player.x,player.y,1,player.skin,player.shirt,player.pants,Math.atan2(mouse.y-player.y,mouse.x-player.x));for(const p of particles){ctx.globalAlpha=Math.max(0,p.life/40);ctx.fillStyle=p.col;ctx.fillRect(p.x,p.y,3,3);ctx.globalAlpha=1}
