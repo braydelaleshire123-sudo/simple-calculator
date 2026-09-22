@@ -16,7 +16,7 @@ function initAudio(){
   if(!audioCtx){
     audioCtx=new A();
     audioMaster=audioCtx.createGain();
-    audioMaster.gain.value=.35;
+    audioMaster.gain.value=.99;
     audioMaster.connect(audioCtx.destination);
   }
   if(audioCtx.state==='suspended'){audioCtx.resume().then(()=>startMusic()).catch(()=>{});}else startMusic();
