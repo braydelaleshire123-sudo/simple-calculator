@@ -12,32 +12,50 @@
 // ===== TANK OPS AUDIO =====
 let audioCtx=null,audioMaster=null,musicTimer=null,audioMuted=false,stepClock=0,musicStep=0;
 function initAudio(){
-  if(audioCtx){if(audioCtx.state==='suspended')audioCtx.resume();return}
   const A=window.AudioContext||window.webkitAudioContext;if(!A)return;
-  audioCtx=new A();audioMaster=audioCtx.createGain();audioMaster.gain.value=.055;audioMaster.connect(audioCtx.destination);
+  if(!audioCtx){
+    audioCtx=new A();
+    audioMaster=audioCtx.createGain();
+    audioMaster.gain.value=.16;
+    audioMaster.connect(audioCtx.destination);
+  }
+  if(audioCtx.state==='suspended')audioCtx.resume();
   startMusic();
 }
-function tone(freq,dur,type='sine',vol=.035){
+function tone(freq,dur,type='sine',vol=.06){
   if(!audioCtx||audioMuted)return;
-  const o=audioCtx.createOscillator(),g=audioCtx.createGain();o.type=type;o.frequency.value=freq;
-  g.gain.setValueAtTime(.0001,audioCtx.currentTime);g.gain.exponentialRampToValueAtTime(vol,audioCtx.currentTime+.015);g.gain.exponentialRampToValueAtTime(.0001,audioCtx.currentTime+dur);
-  o.connect(g);g.connect(audioMaster);o.start();o.stop(audioCtx.currentTime+dur+.02);
+  const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+  o.type=type;o.frequency.value=freq;
+  const now=audioCtx.currentTime;
+  g.gain.setValueAtTime(.0001,now);
+  g.gain.exponentialRampToValueAtTime(vol,now+.02);
+  g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+  o.connect(g);g.connect(audioMaster);o.start(now);o.stop(now+dur+.03);
 }
 function sfx(t){
-  if(t==='step')tone(95,.055,'square',.02);
-  else if(t==='door'){tone(240,.09,'sine',.03);setTimeout(()=>tone(360,.12,'sine',.025),70)}
-  else if(t==='mission'){tone(523,.11,'triangle',.035);setTimeout(()=>tone(659,.15,'triangle',.03),100)}
-  else if(t==='ui')tone(440,.07,'triangle',.03);
-  else if(t==='damage')tone(100,.1,'sawtooth',.02);
+  if(t==='step')tone(95,.055,'square',.018);
+  else if(t==='door'){tone(240,.09,'sine',.035);setTimeout(()=>tone(360,.12,'sine',.03),70)}
+  else if(t==='mission'){tone(523,.11,'triangle',.05);setTimeout(()=>tone(659,.15,'triangle',.045),100)}
+  else if(t==='ui')tone(440,.07,'triangle',.04);
+  else if(t==='damage')tone(100,.1,'sawtooth',.025);
 }
 function startMusic(){
   if(musicTimer||!audioCtx)return;
-  const notes=[110,146.83,164.81,130.81,98,130.81,146.83,123.47];
-  musicTimer=setInterval(()=>{if(!audioMuted){tone(notes[musicStep%notes.length],.42,'triangle',.012);if(musicStep%4===0)tone(notes[(musicStep+2)%notes.length]/2,.7,'sine',.009)}musicStep++},520);
+  const bass=[55,55,65.41,55,49,55,73.42,65.41];
+  const lead=[220,246.94,293.66,246.94,196,220,246.94,174.61];
+  musicTimer=setInterval(()=>{
+    if(!audioMuted){
+      const i=musicStep%8;
+      tone(bass[i],.46,'sine',.045);
+      tone(lead[i],.24,'triangle',.028);
+      if(i%2===0)tone(110+i*3,.09,'square',.012);
+    }
+    musicStep++;
+  },420);
 }
 function toggleMute(){
   audioMuted=!audioMuted;
-  if(audioMaster)audioMaster.gain.value=audioMuted?0:.055;
+  if(audioMaster)audioMaster.gain.value=audioMuted?0:.16;
   const b=document.getElementById('muteAudio');if(b)b.textContent=audioMuted?'🔇 AUDIO OFF':'🔊 AUDIO ON';
 }
 
