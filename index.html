@@ -45,9 +45,9 @@ function startMusic(){
   musicTimer=setInterval(()=>{
     if(!audioMuted){
       const i=musicStep%8;
-      tone(bass[i],.46,'sine',.045);
-      tone(lead[i],.24,'triangle',.028);
-      if(i%2===0)tone(110+i*3,.09,'square',.012);
+      tone(bass[i],.46,'sine',.10);
+      tone(lead[i],.24,'triangle',.065);
+      if(i%2===0)tone(110+i*3,.09,'square',.025);
     }
     musicStep++;
   },420);
