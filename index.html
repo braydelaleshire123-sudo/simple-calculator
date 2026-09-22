@@ -42,15 +42,33 @@ function startMusic(){
   if(musicTimer||!audioCtx)return;
   const bass=[55,55,65.41,55,49,55,73.42,65.41];
   const lead=[220,246.94,293.66,246.94,196,220,246.94,174.61];
-  musicTimer=setInterval(()=>{
-    if(!audioMuted){
+  // Locked 120 BPM: every step is exactly one half-second.
+  const stepDur=.5;
+  musicStep=0;
+  let nextTime=audioCtx.currentTime+.06;
+  function schedule(){
+    if(!audioCtx)return;
+    while(nextTime<audioCtx.currentTime+.20){
       const i=musicStep%8;
-      tone(bass[i],.46,'sine',.10);
-      tone(lead[i],.24,'triangle',.065);
-      if(i%2===0)tone(110+i*3,.09,'square',.025);
+      if(!audioMuted){
+        const when=nextTime;
+        const play=(freq,dur,type,vol)=>{
+          const o=audioCtx.createOscillator(),g=audioCtx.createGain();
+          o.type=type;o.frequency.value=freq;
+          g.gain.setValueAtTime(.0001,when);
+          g.gain.exponentialRampToValueAtTime(vol,when+.015);
+          g.gain.exponentialRampToValueAtTime(.0001,when+dur);
+          o.connect(g);g.connect(audioMaster);o.start(when);o.stop(when+dur+.02);
+        };
+        play(bass[i],.42,'sine',.10);
+        play(lead[i],.22,'triangle',.065);
+        if(i%2===0)play(110+i*3,.08,'square',.025);
+      }
+      musicStep++;nextTime+=stepDur;
     }
-    musicStep++;
-  },420);
+  }
+  musicTimer=setInterval(schedule,50);
+  schedule();
 }
 function toggleMute(){
   audioMuted=!audioMuted;
