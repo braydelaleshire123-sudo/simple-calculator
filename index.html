@@ -91,7 +91,7 @@ function draw(){ctx.fillStyle=world[1];ctx.fillRect(0,0,W,H);ctx.save();ctx.tran
  ctx.save();
  ctx.shadowColor='#0008';ctx.shadowBlur=10;ctx.shadowOffsetY=6;
  const roof=o.bridge?'#80684e':'#343b42', wall=o.bridge?'#5e4d3b':'#242a31';
- ctx.fillStyle=wall;ctx.fillRect(o.x,o.y,o.w,o.h);if(player&&player.onFoot&&player.x>o.x&&player.x<o.x+o.w&&player.y>o.y&&player.y<o.y+o.h)drawInterior(o);
+ ctx.fillStyle=wall;ctx.fillRect(o.x,o.y,o.w,o.h);if(player&&player.onFoot&&player.x>o.x&&player.x<o.x+o.w&&player.y>o.y&&player.y<o.y+o.h){ctx.fillStyle='#12171b';ctx.fillRect(o.x+8,o.y+8,o.w-16,o.h-16);ctx.strokeStyle='#7a858c';ctx.lineWidth=3;ctx.strokeRect(o.x+8,o.y+8,o.w-16,o.h-16);ctx.fillStyle='#2e373d';ctx.fillRect(o.x+20,o.y+28,70,24);ctx.fillRect(o.x+o.w-100,o.y+30,65,34);ctx.fillStyle='#56636b';ctx.fillRect(o.x+25,o.y+70,42,30);ctx.fillRect(o.x+o.w-70,o.y+85,45,22);ctx.fillStyle='#8c7748';ctx.fillRect(o.x+o.w/2-4,o.y+o.h-48,8,18);ctx.fillStyle='#20282d';ctx.fillRect(o.x+o.w/2-28,o.y+o.h-30,56,16);}
  ctx.fillStyle='rgba(255,255,255,.045)';ctx.fillRect(o.x+6,o.y+6,o.w-12,o.h-12);
  ctx.shadowColor='transparent';
  ctx.fillStyle=roof;ctx.fillRect(o.x-4,o.y-4,o.w+8,8);
