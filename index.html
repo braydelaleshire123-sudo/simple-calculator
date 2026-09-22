@@ -40,40 +40,26 @@ function sfx(t){
 }
 function startMusic(){
   if(musicTimer||!audioCtx)return;
-  // Cinematic hybrid: keeps the original melody/beat, but adds a deeper pulse,
-  // low impacts and a soft pad so it feels more like a military action score.
   const bass=[55,55,65.41,55,49,55,73.42,65.41];
   const lead=[220,246.94,293.66,246.94,196,220,246.94,174.61];
-  const pad=[[110,164.81,220],[110,146.83,220],[98,146.83,196],[110,164.81,220]];
   const stepDur=.5;
   musicStep=0;
   let nextTime=audioCtx.currentTime+.08;
   function schedule(){
     if(!audioCtx)return;
     while(nextTime<audioCtx.currentTime+.28){
-      const i=musicStep%8, bar=Math.floor(musicStep/8)%4, when=nextTime;
+      const i=musicStep%8,when=nextTime;
       if(!audioMuted){
-        const play=(freq,dur,type,vol,attack=.02)=>{
+        const play=(freq,dur,type,vol)=>{
           const o=audioCtx.createOscillator(),g=audioCtx.createGain();
           o.type=type;o.frequency.setValueAtTime(freq,when);
           g.gain.setValueAtTime(.0001,when);
-          g.gain.exponentialRampToValueAtTime(vol,when+attack);
+          g.gain.exponentialRampToValueAtTime(vol,when+.02);
           g.gain.exponentialRampToValueAtTime(.0001,when+dur);
           o.connect(g);g.connect(audioMaster);o.start(when);o.stop(when+dur+.03);
         };
-        // Original melody and bass.
-        play(bass[i],.44,'sine',.13,.018);
-        play(lead[i],.24,'triangle',.07,.015);
-        // Cinematic low pulse on the main beats.
-        if(i===0||i===4)play(41.2,.22,'sine',.16,.008);
-        if(i%2===0)play(82.41,.09,'square',.035,.006);
-        // Soft sustained chord underneath each bar.
-        if(i===0){
-          for(const f of pad[bar])play(f,1.8,'sine',.018,.12);
-        }
-        // Subtle marching percussion/impact accents.
-        if(i===0||i===2||i===4||i===6)play(62,.055,'triangle',.045,.004);
-        if(i===3||i===7)play(48,.075,'triangle',.028,.004);
+        play(bass[i],.44,'sine',.13);
+        play(lead[i],.24,'triangle',.07);
       }
       musicStep++;
       nextTime+=stepDur;
