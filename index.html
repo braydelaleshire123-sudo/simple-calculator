@@ -148,7 +148,37 @@ function draw(){ctx.fillStyle=world[1];ctx.fillRect(0,0,W,H);ctx.save();ctx.tran
  ctx.save();
  ctx.shadowColor='#0008';ctx.shadowBlur=10;ctx.shadowOffsetY=6;
  const buildingPalettes=[['#4f7ea3','#29455c'],['#5b8b72','#315442'],['#7d718f','#4a4058'],['#718ca3','#3d5268'],['#9a6f91','#60435b']];const bp=buildingPalettes[o.type%buildingPalettes.length],roof=bp[0],wall=bp[1];
- if(player&&player.onFoot&&player.inBuilding===o.id){ctx.fillStyle=['#1b2024','#202923','#242024','#1f2529','#252522'][o.type];ctx.fillRect(o.x,o.y,o.w,o.h);ctx.strokeStyle='#87939a';ctx.lineWidth=4;ctx.strokeRect(o.x+5,o.y+5,o.w-10,o.h-10);ctx.fillStyle='#313a40';ctx.fillRect(o.x+18,o.y+18,o.w*.32,24);ctx.fillStyle='#59656b';ctx.fillRect(o.x+20,o.y+55,60,34);ctx.fillStyle='#8a744b';ctx.fillRect(o.x+o.w-92,o.y+22,62,18);ctx.fillStyle='#30383d';ctx.fillRect(o.x+o.w-105,o.y+55,70,48);ctx.fillStyle='#4f5b61';ctx.fillRect(o.x+28,o.y+o.h-58,85,25);ctx.fillStyle='#6d7b80';ctx.fillRect(o.x+o.w*.48,o.y+o.h-62,55,30);ctx.fillStyle='#11171b';ctx.fillRect(o.x+o.w*.48+8,o.y+o.h-56,39,17);ctx.fillStyle='#c5a85b';ctx.fillRect(o.x+o.w/2-3,o.y+o.h-18,6,12);ctx.fillStyle='#111';ctx.font='bold 11px system-ui';ctx.textAlign='center';ctx.fillText(['COMMAND ROOM','WORKSHOP','BARRACKS','WAREHOUSE','OFFICE'][o.type],o.x+o.w/2,o.y+o.h/2);}
+ if(player&&player.onFoot&&player.inBuilding===o.id){
+  const floor=['#242a2e','#29352d','#302c31','#2d3337','#34322b'][o.type]||'#2b3034';
+  ctx.shadowColor='#0009';ctx.shadowBlur=18;ctx.shadowOffsetY=8;
+  ctx.fillStyle=floor;ctx.fillRect(o.x,o.y,o.w,o.h);ctx.shadowColor='transparent';
+  ctx.strokeStyle='#aeb8bd';ctx.lineWidth=5;ctx.strokeRect(o.x+3,o.y+3,o.w-6,o.h-6);
+  // interior floor panels
+  ctx.strokeStyle='#ffffff10';ctx.lineWidth=1;
+  for(let gx=o.x+18;gx<o.x+o.w;gx+=34){ctx.beginPath();ctx.moveTo(gx,o.y+8);ctx.lineTo(gx,o.y+o.h-8);ctx.stroke()}
+  for(let gy=o.y+18;gy<o.y+o.h;gy+=34){ctx.beginPath();ctx.moveTo(o.x+8,gy);ctx.lineTo(o.x+o.w-8,gy);ctx.stroke()}
+  // furniture / equipment
+  ctx.fillStyle='#3e494f';ctx.fillRect(o.x+18,o.y+18,Math.min(86,o.w-36),24);
+  ctx.fillStyle='#657177';ctx.fillRect(o.x+20,o.y+52,64,34);
+  ctx.fillStyle='#151b1f';ctx.fillRect(o.x+o.w-100,o.y+20,72,44);
+  ctx.fillStyle='#59656b';ctx.fillRect(o.x+o.w-106,o.y+72,82,34);
+  ctx.fillStyle='#777b6e';ctx.fillRect(o.x+28,o.y+o.h-54,90,26);
+  ctx.fillStyle='#20272b';ctx.fillRect(o.x+o.w*.48,o.y+o.h-62,72,36);
+  ctx.fillStyle='#c5a85b';ctx.fillRect(o.x+o.w/2-3,o.y+o.h-20,6,14);
+  // interior title
+  ctx.fillStyle='#d9e2e5';ctx.font='bold 12px system-ui';ctx.textAlign='center';
+  ctx.fillText(['COMMAND ROOM','WORKSHOP','BARRACKS','WAREHOUSE','OFFICE'][o.type],o.x+o.w/2,o.y+o.h/2);
+  // doorway opening
+  if(o.doorSide==='bottom'){
+    ctx.fillStyle=floor;ctx.fillRect(o.x+o.w/2-22,o.y+o.h-7,44,10);
+    ctx.fillStyle='#d4b85b';ctx.fillRect(o.x+o.w/2+12,o.y+o.h-5,3,3);
+  }else{
+    ctx.fillStyle=floor;ctx.fillRect(o.x+o.w-7,o.y+o.h/2-22,10,44);
+    ctx.fillStyle='#d4b85b';ctx.fillRect(o.x+o.w-5,o.y+o.h/2+12,3,3);
+  }
+  ctx.restore();
+  continue;
+}
  ctx.fillStyle=wall;ctx.fillRect(o.x+4,o.y+4,o.w-8,o.h-8);ctx.fillStyle='rgba(255,255,255,.08)';ctx.fillRect(o.x+8,o.y+8,o.w-16,Math.min(16,o.h-16));
  ctx.shadowColor='transparent';
  ctx.fillStyle=roof;ctx.fillRect(o.x-4,o.y-4,o.w+8,8);
