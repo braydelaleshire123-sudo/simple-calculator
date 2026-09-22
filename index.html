@@ -40,31 +40,43 @@ function sfx(t){
 }
 function startMusic(){
   if(musicTimer||!audioCtx)return;
+  // Cinematic hybrid: keeps the original melody/beat, but adds a deeper pulse,
+  // low impacts and a soft pad so it feels more like a military action score.
   const bass=[55,55,65.41,55,49,55,73.42,65.41];
   const lead=[220,246.94,293.66,246.94,196,220,246.94,174.61];
-  // Locked 120 BPM: every step is exactly one half-second.
+  const pad=[[110,164.81,220],[110,146.83,220],[98,146.83,196],[110,164.81,220]];
   const stepDur=.5;
   musicStep=0;
-  let nextTime=audioCtx.currentTime+.06;
+  let nextTime=audioCtx.currentTime+.08;
   function schedule(){
     if(!audioCtx)return;
-    while(nextTime<audioCtx.currentTime+.20){
-      const i=musicStep%8;
+    while(nextTime<audioCtx.currentTime+.28){
+      const i=musicStep%8, bar=Math.floor(musicStep/8)%4, when=nextTime;
       if(!audioMuted){
-        const when=nextTime;
-        const play=(freq,dur,type,vol)=>{
+        const play=(freq,dur,type,vol,attack=.02)=>{
           const o=audioCtx.createOscillator(),g=audioCtx.createGain();
-          o.type=type;o.frequency.value=freq;
+          o.type=type;o.frequency.setValueAtTime(freq,when);
           g.gain.setValueAtTime(.0001,when);
-          g.gain.exponentialRampToValueAtTime(vol,when+.015);
+          g.gain.exponentialRampToValueAtTime(vol,when+attack);
           g.gain.exponentialRampToValueAtTime(.0001,when+dur);
-          o.connect(g);g.connect(audioMaster);o.start(when);o.stop(when+dur+.02);
+          o.connect(g);g.connect(audioMaster);o.start(when);o.stop(when+dur+.03);
         };
-        play(bass[i],.42,'sine',.10);
-        play(lead[i],.22,'triangle',.065);
-        if(i%2===0)play(110+i*3,.08,'square',.025);
+        // Original melody and bass.
+        play(bass[i],.44,'sine',.13,.018);
+        play(lead[i],.24,'triangle',.07,.015);
+        // Cinematic low pulse on the main beats.
+        if(i===0||i===4)play(41.2,.22,'sine',.16,.008);
+        if(i%2===0)play(82.41,.09,'square',.035,.006);
+        // Soft sustained chord underneath each bar.
+        if(i===0){
+          for(const f of pad[bar])play(f,1.8,'sine',.018,.12);
+        }
+        // Subtle marching percussion/impact accents.
+        if(i===0||i===2||i===4||i===6)play(62,.055,'triangle',.045,.004);
+        if(i===3||i===7)play(48,.075,'triangle',.028,.004);
       }
-      musicStep++;nextTime+=stepDur;
+      musicStep++;
+      nextTime+=stepDur;
     }
   }
   musicTimer=setInterval(schedule,50);
@@ -215,7 +227,7 @@ function draw(){ctx.fillStyle=world[1];ctx.fillRect(0,0,W,H);ctx.save();ctx.tran
  ctx.restore();
 }for(let p of items){let inf=powerInfo[p.type],pc=p.type==='KEY'?'#ffd34d':p.type==='AMMO'?'#e2c54f':'#75d6ff';ctx.save();ctx.shadowColor=pc;ctx.shadowBlur=14;ctx.fillStyle=pc;ctx.beginPath();ctx.arc(p.x,p.y,15+Math.sin(performance.now()/160+p.x)*2,0,7);ctx.fill();ctx.shadowBlur=0;ctx.fillStyle='#071017';ctx.font='bold 13px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(inf?inf[0]:p.type==='KEY'?'K':'A',p.x,p.y);ctx.font='bold 10px system-ui';ctx.fillStyle='#fff';ctx.fillText(inf?inf[1]:p.type,p.x,p.y+25);ctx.restore()}if(mission&&mission.type==='key'){
  ctx.strokeStyle=mission.unlocked?'#55d88a':'#ffd34d';ctx.lineWidth=3;ctx.globalAlpha=.45+Math.sin(performance.now()/220)*.2;ctx.beginPath();ctx.arc(mission.unlocked?mission.door.x:mission.key.x,mission.unlocked?mission.door.y:mission.key.y,30,0,7);ctx.stroke();ctx.globalAlpha=1;
- ctx.fillStyle=mission.unlocked?'#55d88a':'#b85a50';ctx.fillRect(mission.door.x-30,mission.door.y-12,60,24);ctx.fillStyle='#fff';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText(mission.unlocked?'OPEN':'LOCKED',mission.door.x,mission.door.y+3)}if(mission&&mission.type==='rescue'&&!mission.rescued){ctx.strokeStyle='#62d68b';ctx.lineWidth=3;ctx.globalAlpha=.5+Math.sin(performance.now()/180)*.2;ctx.beginPath();ctx.arc(mission.survivor.x,mission.survivor.y,32,0,7);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle='#62d68b';ctx.beginPath();ctx.arc(mission.survivor.x,mission.survivor.y,18,0,7);ctx.fill();ctx.fillStyle='#111';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('S',mission.survivor.x,mission.survivor.y+4)}for(let b of bullets){ctx.fillStyle=b.enemy?'#e35d63':'#ffd34d';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()}for(let e of enemies){tank(e.x,e.y,e.r/16,e.color,Math.atan2(player.y-e.y,player.x-e.x));if(e.elite){ctx.save();ctx.strokeStyle=e.color;ctx.lineWidth=3;ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(e.x,e.y,e.r+8,0,7);ctx.stroke();ctx.restore()}ctx.fillStyle='#111';ctx.fillRect(e.x-e.r,e.y-e.r-8,e.r*2,4);ctx.fillStyle='#70d88a';ctx.fillRect(e.x-e.r,e.y-e.r-8,e.r*2*Math.max(0,e.hp/e.maxHp),4);if(e.shield){ctx.strokeStyle='#72dfff';ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,7);ctx.stroke()}}if(boss){let bc=boss.phase===1?'#9a5145':boss.phase===2?'#d07a43':'#d83f5d';tank(boss.x,boss.y,2.25,bc,Math.atan2(player.y-boss.y,player.x-boss.x));ctx.fillStyle='#111';ctx.fillRect(boss.x-85,boss.y-85,170,9);ctx.fillStyle=bc;ctx.fillRect(boss.x-85,boss.y-85,170*boss.hp/boss.maxHp,9);ctx.fillStyle='#fff';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('BOSS PHASE '+boss.phase,boss.x,boss.y-94)}if(player.onFoot){drawSoldier(player.x,player.y,Math.atan2(mouse.y+cam.y-player.y,mouse.x+cam.x-player.x),player.inBuilding!=null)}else tank(player.x,player.y,Math.max(1.08,player.size),'#3f78b5',Math.atan2(mouse.y+cam.y-player.y,mouse.x+cam.x-player.x),1);for(let p of parts){ctx.globalAlpha=Math.max(0,p.life/45);ctx.fillStyle=p.col;ctx.fillRect(p.x,p.y,4,4);ctx.globalAlpha=1}ctx.restore();drawCursor();mx.clearRect(0,0,150,105);mx.fillStyle='#080c10';mx.fillRect(0,0,150,105);let sx=150/3200,sy=105/2200;mx.fillStyle='#687780';for(let o of obs)mx.fillRect(o.x*sx,o.y*sy,o.w*sx,o.h*sy);mx.fillStyle='#5bbcff';mx.fillRect(player.x*sx-2,player.y*sy-2,4,4);mx.fillStyle='#e45d67';for(let e of enemies)mx.fillRect(e.x*sx,e.y*sy,2,2);if(boss){mx.fillStyle='#ffcf52';mx.fillRect(boss.x*sx-2,boss.y*sy-2,4,4)}}
+ ctx.fillStyle=mission.unlocked?'#55d88a':'#b85a50';ctx.fillRect(mission.door.x-30,mission.door.y-12,60,24);ctx.fillStyle='#fff';ctx.font='bold 10px system-ui';ctx.textAlign='center';ctx.fillText(mission.unlocked?'OPEN':'LOCKED',mission.door.x,mission.door.y+3)}if(mission&&mission.type==='rescue'&&!mission.rescued){ctx.strokeStyle='#62d68b';ctx.lineWidth=3;ctx.globalAlpha=.5+Math.sin(performance.now()/180)*.2;ctx.beginPath();ctx.arc(mission.survivor.x,mission.survivor.y,32,0,7);ctx.stroke();ctx.globalAlpha=1;ctx.fillStyle='#62d68b';ctx.beginPath();ctx.arc(mission.survivor.x,mission.survivor.y,18,0,7);ctx.fill();ctx.fillStyle='#111';ctx.font='bold 12px system-ui';ctx.textAlign='center';ctx.fillText('S',mission.survivor.x,mission.survivor.y+4)}for(let b of bullets){ctx.fillStyle=b.enemy?'#e35d63':'#ffd34d';ctx.beginPath();ctx.arc(b.x,b.y,b.r,0,7);ctx.fill()}for(let e of enemies){tank(e.x,e.y,e.r/16*1.28,e.color,Math.atan2(player.y-e.y,player.x-e.x));if(e.elite){ctx.save();ctx.strokeStyle=e.color;ctx.lineWidth=3;ctx.globalAlpha=.75;ctx.beginPath();ctx.arc(e.x,e.y,e.r+8,0,7);ctx.stroke();ctx.restore()}ctx.fillStyle='#111';ctx.fillRect(e.x-e.r,e.y-e.r-8,e.r*2,4);ctx.fillStyle='#70d88a';ctx.fillRect(e.x-e.r,e.y-e.r-8,e.r*2*Math.max(0,e.hp/e.maxHp),4);if(e.shield){ctx.strokeStyle='#72dfff';ctx.beginPath();ctx.arc(e.x,e.y,e.r+5,0,7);ctx.stroke()}}if(boss){let bc=boss.phase===1?'#9a5145':boss.phase===2?'#d07a43':'#d83f5d';tank(boss.x,boss.y,3.2,bc,Math.atan2(player.y-boss.y,player.x-boss.x));ctx.fillStyle='#111';ctx.fillRect(boss.x-85,boss.y-85,170,9);ctx.fillStyle=bc;ctx.fillRect(boss.x-85,boss.y-85,170*boss.hp/boss.maxHp,9);ctx.fillStyle='#fff';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.fillText('BOSS PHASE '+boss.phase,boss.x,boss.y-94)}if(player.onFoot){drawSoldier(player.x,player.y,Math.atan2(mouse.y+cam.y-player.y,mouse.x+cam.x-player.x),player.inBuilding!=null)}else tank(player.x,player.y,Math.max(1.08,player.size),'#3f78b5',Math.atan2(mouse.y+cam.y-player.y,mouse.x+cam.x-player.x),1);for(let p of parts){ctx.globalAlpha=Math.max(0,p.life/45);ctx.fillStyle=p.col;ctx.fillRect(p.x,p.y,4,4);ctx.globalAlpha=1}ctx.restore();drawCursor();mx.clearRect(0,0,150,105);mx.fillStyle='#080c10';mx.fillRect(0,0,150,105);let sx=150/3200,sy=105/2200;mx.fillStyle='#687780';for(let o of obs)mx.fillRect(o.x*sx,o.y*sy,o.w*sx,o.h*sy);mx.fillStyle='#5bbcff';mx.fillRect(player.x*sx-2,player.y*sy-2,4,4);mx.fillStyle='#e45d67';for(let e of enemies)mx.fillRect(e.x*sx,e.y*sy,2,2);if(boss){mx.fillStyle='#ffcf52';mx.fillRect(boss.x*sx-2,boss.y*sy-2,4,4)}}
 function loop(t){if(!running)return;if(!paused&&!upgradeOpen){let dt=Math.min((t-last)/16.67,2);last=t;try{update(dt);draw()}catch(e){running=0;const m=document.getElementById('msg');m.textContent='GAME ERROR: '+(e&&e.message?e.message:String(e));m.style.opacity=1;m.style.fontSize='22px';console.error(e)}}requestAnimationFrame(loop)}
 function gameOver(){if(!running)return;running=0;high=Math.max(high,score);localStorage.tankOpsHigh=high;saveGame();document.getElementById('finalScore').textContent=score;document.getElementById('finalWave').textContent=wave;document.getElementById('finalLevel').textContent=player.level;document.getElementById('high').textContent=high;document.getElementById('over').classList.remove('hide')}
 function beep(f){try{let A=window.AudioContext||window.webkitAudioContext;if(!A)return;if(!window.ac)window.ac=new A;if(ac.state==='suspended')ac.resume();let o=ac.createOscillator(),g=ac.createGain();o.frequency.value=f;o.type='square';g.gain.value=.02;o.connect(g);g.connect(ac.destination);o.start();o.stop(ac.currentTime+.05)}catch(e){}}
@@ -253,7 +265,7 @@ function hurt(v){if(player.onFoot){player.footHp=Math.max(0,(Number(player.footH
 function xp(n){n*=player.xpBoost?1.7:1;player.xp+=n;while(player.xp>=player.next){player.xp-=player.next;player.level++;player.next=Math.floor(player.next*1.3);player.maxHp+=8;player.hp=Math.min(player.maxHp,player.hp+25);player.coins+=35;show('LEVEL UP! '+player.level)}}
 function drop(x,y){if(Math.random()<.25)items.push({x,y,type:'AMMO',life:900});else if(Math.random()<.6)items.push({x,y,type:powers[Math.floor(Math.random()*powers.length)],life:900})}
 function collect(t){if(t==='AMMO'){player.reserve+=45;show('+45 AMMO');return}if(t==='KEY'){if(mission&&mission.type==='key'){mission.progress=1;mission.unlocked=true;show('🔑 KEY FOUND — FIND THE DOOR');}return}let map={RAPID:['rapid',500],ARMOR:['armor',1],MEGA:['damage',25],SHIELD:['shield',60],REPAIR:['repair',40],SPEED:['speedTime',500],TRIPLE:['triple',450],COIN:['coins',100],XP:['xpBoost',500],FREEZE:['freeze',350],BERSERK:['rapid',700],AMMO:['reserve',100]};let a=map[t];if(t==='ARMOR')player.armor++;else if(t==='SHIELD')player.shield=Math.min(100,player.shield+60);else if(t==='REPAIR')player.hp=Math.min(player.maxHp,player.hp+40);else if(t==='MEGA')player.damage+=25;else if(t==='COIN')player.coins+=100;else if(a)player[a[0]]=Math.max(player[a[0]]||0,a[1]);show(t)}
-function defeat(e){score+=e.score;player.coins+=Math.ceil(e.score/3);player.kills++;xp(e.score);if(mission)mission.progress=(mission.progress||0)+1;player.size=Math.min(1.65,1+player.kills*.006);burst(e.x,e.y,15,'#ddd');drop(e.x,e.y);beep(65)}
+function defeat(e){score+=e.score;player.coins+=Math.ceil(e.score/3);player.kills++;xp(e.score);if(mission)mission.progress=(mission.progress||0)+1;player.size=Math.min(2.0,1.65+player.kills*.006);burst(e.x,e.y,15,'#ddd');drop(e.x,e.y);beep(65)}
 function upgrade(){upgradeOpen=1;upgradeEl.classList.remove('hide');coinsEl.textContent=player.coins;levelEl.textContent=player.level;upgradesEl.innerHTML=[['ARMOR','maxHp+=25;hp+=25'],['ENGINE','speed+=.5'],['DAMAGE','damage+=8'],['SHIELD','shield+=50'],['AMMO','reserve+=80'],['COINS','coins+=100']].map((x,i)=>'<button class="tile" onclick="buy('+i+')"><b>'+x[0]+'</b><br><small>'+x[1]+'</small></button>').join('')}
 function buy(i){[()=>{player.maxHp+=25;player.hp+=25},()=>player.speed+=.5,()=>player.damage+=8,()=>player.shield=Math.min(100,player.shield+50),()=>player.reserve+=80,()=>player.coins+=100][i]();show('UPGRADE INSTALLED')}
 function continueWave(){upgradeOpen=0;upgradeEl.classList.add('hide');newWave()}
